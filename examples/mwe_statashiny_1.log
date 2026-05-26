@@ -1,0 +1,13 @@
+<span class="stinp">. sysuse auto, clear</span>
+(1978 automobile data)
+
+<span class="stinp">. summarize price mpg weight length</span>
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+       price |<span class="stres">         74    6165.257    2949.496       3291      15906</span>
+         mpg |<span class="stres">         74     21.2973    5.785503         12         41</span>
+      weight |<span class="stres">         74    3019.459    777.1936       1760       4840</span>
+      length |<span class="stres">         74    187.9324    22.26634        142        233</span>
+
+<span class="stinp">. wdclose</span>

@@ -1,0 +1,3 @@
+v 3
+d statashiny: Build interactive HTML dashboards, calculators, and data tables from Stata
+p statashiny

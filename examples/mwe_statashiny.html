@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="format-detection" content="telephone=no">
+<title>mwe_statashiny.html</title>
+<style>
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px; line-height: 1.428;
+  margin: 0 auto; padding: 0 15px;
+}
+h1, h2, h3, h4, h5, h6 { margin: 20px 0 10px; }
+h1 { font-size: 28px; } h2 { font-size: 24px; }
+h3 { font-size: 18px; } h4 { font-size: 16px; }
+h5 { font-size: 14px; } h6 { font-size: 12px; }
+a { color: #337AB7; text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; height: auto; }
+ul, ol { padding-left: 30px; }
+pre, code, samp {
+  font-size: 13px;
+  font-family: Courier, monospace;
+}
+code, samp {
+  background-color: #F5F5F5;
+  border-radius: 3px; padding: 3px;
+}
+pre code, pre samp {
+  white-space: pre; background: transparent;
+  border: none; padding: 0;
+}
+pre {
+  line-height: 1.33; background-color: #F5F5F5;
+  border: 1px solid #CCCCCC; border-radius: 3px;
+  padding: 8px; overflow: auto;
+}
+</style>
+<!-- ═══════════════════════════════════════════════════════════════════════
+     webdoc2 default theme header
+     Injected into <head> via:  wdinit myfile, replace
+     (or manually: webdoc init myfile, replace header2(include("header.html")))
+
+     To customise: copy this file, edit freely, then point wdinit at it:
+         wdinit myfile, replace headerfile("my_custom_header.html")
+     ════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Bootstrap 5.3 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+<!-- Google Fonts: Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<!-- Bootstrap Icons (chevron for back-to-top button) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+/* ── Theme tokens — override here to change the colour scheme ────────────── */
+:root {
+  --wd-primary:    #1B2D55;   /* navbar / headings / accents */
+  --wd-accent:     #D44500;   /* h2 underline, hover highlights */
+  --wd-link:       #2B6CB0;   /* body link colour */
+  --wd-light-bg:   #F5F7FA;   /* code blocks, TOC, accordion bg */
+  --wd-border:     #DEE2E6;
+  --wd-text:       #1A1A2E;
+  --wd-muted:      #6C7A8D;
+  --wd-page-width: 90%;       /* default content width; override with wdwidth command */
+}
+
+/* ── Always reserve scrollbar space; offset anchors below sticky navbar ──── */
+html {
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;   /* matches navbar height so anchors aren't hidden */
+}
+
+/* ── Base typography ──────────────────────────────────────────────────────── */
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.68;
+  color: var(--wd-text);
+  background-color: #ffffff;
+}
+
+/* ── Navbar ───────────────────────────────────────────────────────────────── */
+.navbar {
+  background-color: var(--wd-primary) !important;
+  padding: 0.55rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+}
+.navbar-brand {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff !important;
+}
+.navbar-toggler        { border-color: rgba(255,255,255,0.4); }
+.navbar-toggler-icon   { filter: invert(1) brightness(2); }
+.navbar-nav .nav-link  {
+  font-size: 0.80rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.78) !important;
+  padding: 0.5rem 1.05rem !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  border-bottom-color: var(--wd-accent);
+}
+.navbar-nav .nav-link.active {
+  color: #ffffff !important;
+  border-bottom-color: var(--wd-accent);
+  font-weight: 600;
+}
+
+/* ── Navbar dropdowns ─────────────────────────────────────────────────────── */
+.navbar .dropdown-menu {
+  background-color: #ffffff;
+  border: 1px solid var(--wd-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  margin-top: 0.25rem;
+  min-width: 180px;
+}
+.navbar .dropdown-item {
+  font-size: 0.85rem;
+  color: var(--wd-text);
+  padding: 0.45rem 1rem;
+}
+.navbar .dropdown-item:hover {
+  background-color: var(--wd-light-bg);
+  color: var(--wd-primary);
+}
+.navbar .dropdown-toggle::after { vertical-align: 0.1em; }
+
+/* ── Headings ─────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--wd-primary);
+  margin-top: 1.75rem;
+  margin-bottom: 0.55rem;
+}
+h1 { font-size: 1.85rem; }
+h2 {
+  font-size: 1.35rem;
+  border-bottom: 3px solid var(--wd-accent);
+  padding-bottom: 0.28rem;
+}
+h3 { font-size: 1.12rem; }
+h4 { font-size: 1rem; color: var(--wd-muted); }
+
+/* ── Links ────────────────────────────────────────────────────────────────── */
+a       { color: var(--wd-link);   text-decoration: none; }
+a:hover { color: var(--wd-accent); text-decoration: underline; }
+
+/* ── Stata log blocks ─────────────────────────────────────────────────────── */
+pre.stlog {
+  background-color: var(--wd-light-bg);
+  border: 1px solid var(--wd-border);
+  border-left: 4px solid var(--wd-primary);
+  border-radius: 0 6px 6px 0;
+  padding: 0.9rem 1.2rem;
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-x: auto;
+  margin-bottom: 1.1rem;
+}
+.stinp { color: var(--wd-primary); font-weight: 600; }
+.stres { color: #145A32; }
+.stcmt { font-style: italic; opacity: 0.55; }
+
+/* ── Bootstrap accordion (button.ado / graphbutton.ado) ───────────────────── */
+.accordion, .accordion-item, .accordion-body { max-width: 100%; }
+.accordion-item {
+  border: 1px solid var(--wd-border);
+  border-radius: 6px !important;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+.accordion-button {
+  font-size: 0.82rem;
+  font-weight: 500;
+  background-color: var(--wd-light-bg);
+  color: var(--wd-primary) !important;
+}
+.accordion-button:not(.collapsed) {
+  background-color: var(--wd-primary);
+  color: #ffffff !important;
+  box-shadow: none;
+}
+.accordion-button:not(.collapsed)::after { filter: invert(1) brightness(2); }
+.accordion-body { padding: 1rem 1.2rem; background-color: #ffffff; overflow-x: auto; }
+
+/* ── Lists ────────────────────────────────────────────────────────────────── */
+/* wdlist (dashed) — LaTeX-like em-dash markers via ::before. */
+ul.wd-list-dashed {
+  list-style: none;
+  padding-left: 1.2rem;
+}
+ul.wd-list-dashed > li {
+  position: relative;
+  padding-left: 1.2rem;
+  margin-bottom: 0.15rem;
+}
+ul.wd-list-dashed > li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--wd-primary);
+  font-weight: 600;
+}
+/* wditemize (round) and wdenumerate (numbers) use default browser markers. */
+ul:not(.wd-list-dashed) > li,
+ol > li { margin-bottom: 0.15rem; }
+
+/* ── Figures ──────────────────────────────────────────────────────────────── */
+figure { margin: 0.8rem 0; }
+figure img {
+  border-radius: 6px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.09);
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── In-page Table of Contents ────────────────────────────────────────────── */
+.wd-toc-wrap {
+  background-color: var(--wd-light-bg);
+  border: 1px solid var(--wd-border);
+  border-left: 4px solid var(--wd-primary);
+  border-radius: 0 6px 6px 0;
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  min-width: 220px;
+  max-width: 480px;
+}
+.wd-toc-title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--wd-primary);
+  margin-bottom: 0.45rem;
+}
+.wd-toc-list { margin: 0; padding: 0; list-style: none; }
+.wd-toc-list a {
+  display: block;
+  color: var(--wd-primary);
+  font-size: 0.87rem;
+  line-height: 1.95;
+  text-decoration: none;
+  transition: color 0.14s;
+}
+.wd-toc-list a:hover    { color: var(--wd-accent); }
+.wd-toc-h2              { padding-left: 0.8rem; }
+.wd-toc-h3              { padding-left: 1.6rem; font-size: 0.81rem; }
+.wd-toc-h4              { padding-left: 2.4rem; font-size: 0.78rem; }
+.wd-toc-h5              { padding-left: 3.2rem; font-size: 0.75rem; }
+.wd-toc-h6              { padding-left: 4.0rem; font-size: 0.72rem; }
+
+/* ── Page width — controlled by --wd-page-width; use wdwidth command to change */
+.container,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl,
+.container-xxl {
+  max-width: var(--wd-page-width) !important;
+}
+
+/* ── Misc spacing ─────────────────────────────────────────────────────────── */
+p { margin-bottom: 0.85rem; }
+.container, .container-fluid { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+
+/* ── Back-to-top button ───────────────────────────────────────────────────── */
+#wd-back-to-top {
+  display: none;
+  position: fixed;
+  bottom: 2rem;  right: 2rem;
+  z-index: 9999;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background-color: var(--wd-primary);
+  color: #ffffff;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 46px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.22);
+  transition: background-color 0.18s;
+  padding: 0;
+}
+#wd-back-to-top:hover { background-color: var(--wd-accent); }
+</style>
+
+<!-- Bootstrap 5.3 JS Bundle — enables navbar toggler + accordion collapse -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer crossorigin="anonymous"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ── Back-to-top floating button ──────────────────────────────────────── */
+  var btn = document.createElement('button');
+  btn.id = 'wd-back-to-top';
+  btn.title = 'Back to top';
+  btn.setAttribute('aria-label', 'Back to top');
+  btn.innerHTML = '<i class="bi bi-chevron-up"></i>';
+  document.body.appendChild(btn);
+  window.addEventListener('scroll', function () {
+    btn.style.display = (window.scrollY > 320) ? 'block' : 'none';
+  });
+  btn.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ── Auto-generate in-page TOC from headings ──────────────────────────── */
+  // Finds every element with class "wd-toc-wrap" and fills it with heading links.
+  // wdtoc.ado writes the container; this script fills it in.
+  // Depth controlled per-wrap via data-wd-depth (1..6, default 3).
+  document.querySelectorAll('.wd-toc-wrap').forEach(function (wrap) {
+    var depth = parseInt(wrap.getAttribute('data-wd-depth') || '3', 10);
+    if (isNaN(depth) || depth < 1) depth = 3;
+    if (depth > 6) depth = 6;
+    var selectors = [];
+    for (var d = 1; d <= depth; d++) selectors.push('h' + d);
+
+    var headings = Array.prototype.slice.call(
+      document.querySelectorAll(selectors.join(','))
+    ).filter(function (h) {
+      // Skip headings inside navbar and accordion headers
+      return !h.closest('.navbar') && !h.classList.contains('accordion-header');
+    });
+
+    if (headings.length === 0) return;
+
+    var ul = document.createElement('ul');
+    ul.className = 'wd-toc-list';
+
+    headings.forEach(function (h, i) {
+      if (!h.id) h.id = 'wdtoc-h-' + i;
+      var li = document.createElement('li');
+      li.className = 'wd-toc-' + h.tagName.toLowerCase();
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent.trim();
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    wrap.appendChild(ul);
+  });
+
+  /* ── Remove stray closing-command echoes from Stata log output ──────────── */
+  var _wdClosingCmds = ['wdclose', 'buttonclose', 'graphbuttonclose',
+                        'wdnavbarclose', 'wdnavdropdownclose'];
+  document.querySelectorAll('span.stinp').forEach(function (span) {
+    var txt = span.textContent.replace(/^\s*\.\s*/, '').trim();
+    if (_wdClosingCmds.indexOf(txt) !== -1) {
+      var pre = span.closest('pre.stlog');
+      span.remove();
+      if (pre && pre.textContent.trim() === '') pre.remove();
+    }
+  });
+
+});
+</script>
+<style>
+.stcmd .stcmt { font-style: italic; opacity: 0.5; }
+.stoom, .stcnp { font-style: italic; }
+@media screen { .stcnp { display: none; }}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<div class="container-fluid">
+<a class="navbar-brand" href="#">StataShiny + webdoc2 Demo</a>
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+<div class="collapse navbar-collapse" id="mainNavbar"><ul class="navbar-nav me-auto mb-2 mb-lg-0">
+<li class="nav-item dropdown">
+<a class="nav-link dropdown-toggle" href="#" id="wdNavDD1" role="button" data-bs-toggle="dropdown" aria-expanded="false">Sections</a>
+<ul class="dropdown-menu" aria-labelledby="wdNavDD1">
+<li><a class="dropdown-item" href="#overview">Overview</a></li>
+<li><a class="dropdown-item" href="#analysis">Analysis</a></li>
+<li><a class="dropdown-item" href="#interactive-table">Table</a></li>
+<li><a class="dropdown-item" href="#interactive-visualization">Visualization</a></li>
+</ul></li>
+<li class="nav-item"><a class="nav-link" href="https://ericabooth.github.io/statashiny_Example_Site/">GitHub Pages demo</a></li>
+</ul></div></div></nav>
+<h1 id="overview">Overview</h1>
+<div id="wd-toc" class="wd-toc-wrap" data-wd-depth="2"><strong class="wd-toc-title">Contents</strong></div>
+<p>This page was generated entirely from one Stata do-file. The narrative and static output come from webdoc2; the two interactive widgets below come from statashiny and are embedded with wdiframe.</p>
+<h1 id="analysis">Analysis</h1>
+<h2 id="summary-statistics">Summary statistics</h2>
+<p>Basic descriptives for the classic auto dataset:</p>
+<pre id="stlog-1" class="stlog"><samp><span class="stinp">. sysuse auto, clear</span>
+(1978 automobile data)
+
+<span class="stinp">. summarize price mpg weight length</span>
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+       price |<span class="stres">         74    6165.257    2949.496       3291      15906</span>
+         mpg |<span class="stres">         74     21.2973    5.785503         12         41</span>
+      weight |<span class="stres">         74    3019.459    777.1936       1760       4840</span>
+      length |<span class="stres">         74    187.9324    22.26634        142        233</span>
+
+
+</samp></pre>
+<h2 id="regression-collapsible">Regression (collapsible)</h2>
+<p>Click to reveal the model. Price regressed on fuel economy, weight, and origin:</p>
+<div class="mb-4"> <div class="accordion" id="accordionExample"> <div class="accordion-item"> <h2 class="accordion-header"> <button class="accordion-button collapsed text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse" aria-expanded="false" aria-controls="collapse"> <small>Click to view code</small> </button></h2> <div id="collapse" class="accordion-collapse collapse" data-bs-parent="#accordionExample"><div class="accordion-body">
+<pre id="stlog-2" class="stlog"><samp><span class="stinp">. sysuse auto, clear</span>
+(1978 automobile data)
+
+<span class="stinp">. regress price mpg weight foreign</span>
+
+      Source |       SS           df       MS      Number of obs   =<span class="stres">        74</span>
+-------------+----------------------------------   F(3, 70)        = <span class="stres">    23.29</span>
+       Model | <span class="stres">  317252881         3   105750960   </span>Prob &gt; F        =<span class="stres">    0.0000</span>
+    Residual | <span class="stres">  317812515        70  4540178.78   </span>R-squared       =<span class="stres">    0.4996</span>
+-------------+----------------------------------   Adj R-squared   =<span class="stres">    0.4781</span>
+       Total | <span class="stres">  635065396        73  8699525.97   </span>Root MSE        =   <span class="stres"> 2130.8</span>
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P&gt;|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         mpg |<span class="stres">    21.8536   74.22114     0.29   0.769    -126.1758     169.883</span>
+      weight |<span class="stres">   3.464706    .630749     5.49   0.000     2.206717    4.722695</span>
+     foreign |<span class="stres">    3673.06   683.9783     5.37   0.000     2308.909    5037.212</span>
+       _cons |<span class="stres">  -5853.696   3376.987    -1.73   0.087    -12588.88    881.4934</span>
+------------------------------------------------------------------------------
+
+
+</samp></pre>
+</div> </div> </div> </div> </div> <br>
+<h1 id="interactive-table">Interactive Table</h1>
+<p>The table below is fully searchable and sortable -- it is a live statashiny widget, not a static image. Type in the search box or click a column header.</p>
+<iframe src="shiny_table.html" width="100%" height="480px" frameborder="0" style="border:none; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.06); margin:1rem 0;"></iframe>
+<h1 id="interactive-visualization">Interactive Visualization</h1>
+<p>Move the sliders to change the simulated sample size and bin count. The Chart.js histogram redraws instantly in your browser.</p>
+<iframe src="shiny_viz.html" width="100%" height="620px" frameborder="0" style="border:none; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.06); margin:1rem 0;"></iframe>
+</body>
+</html>

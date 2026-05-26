@@ -1,0 +1,22 @@
+<span class="stinp">. sysuse auto, clear</span>
+(1978 automobile data)
+
+<span class="stinp">. regress price mpg weight foreign</span>
+
+      Source |       SS           df       MS      Number of obs   =<span class="stres">        74</span>
+-------------+----------------------------------   F(3, 70)        = <span class="stres">    23.29</span>
+       Model | <span class="stres">  317252881         3   105750960   </span>Prob &gt; F        =<span class="stres">    0.0000</span>
+    Residual | <span class="stres">  317812515        70  4540178.78   </span>R-squared       =<span class="stres">    0.4996</span>
+-------------+----------------------------------   Adj R-squared   =<span class="stres">    0.4781</span>
+       Total | <span class="stres">  635065396        73  8699525.97   </span>Root MSE        =   <span class="stres"> 2130.8</span>
+
+------------------------------------------------------------------------------
+       price | Coefficient  Std. err.      t    P&gt;|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         mpg |<span class="stres">    21.8536   74.22114     0.29   0.769    -126.1758     169.883</span>
+      weight |<span class="stres">   3.464706    .630749     5.49   0.000     2.206717    4.722695</span>
+     foreign |<span class="stres">    3673.06   683.9783     5.37   0.000     2308.909    5037.212</span>
+       _cons |<span class="stres">  -5853.696   3376.987    -1.73   0.087    -12588.88    881.4934</span>
+------------------------------------------------------------------------------
+
+<span class="stinp">. buttonclose</span>

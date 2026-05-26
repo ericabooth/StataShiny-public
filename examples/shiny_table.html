@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><title>Auto Summary Table</title>
+<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
+<link rel='stylesheet' type='text/css' href='https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css'/>
+<script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+<script type='text/javascript' src='https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js'></script>
+<script type='text/javascript' src='https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js'></script>
+<style>body{padding:30px;background:#f8f9fa;font-family:sans-serif;}.statashiny-component{border:none;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.05);background:white;margin-bottom:1.5rem;}.sidebar{padding:25px;background:#fff;}.form-label{font-weight:700;font-size:0.75rem;color:#666;}.uppercase{text-transform:uppercase;letter-spacing:1px;}</style></head><body>
+<div class='container-fluid'><div class='row mb-2'><div class='col-12'><h2 class='fw-bold text-dark'>Auto Summary Table</h2>
+<hr></div></div><div class='row'>
+<div class='col-12'>  <div class="card mb-3 statashiny-component"><div class="card-body"><h6 class="card-subtitle mb-3 text-muted uppercase small fw-bold">Automobile Descriptives by Origin</h6><div class="table-responsive"><table id="autotab" class="table table-hover table-sm stripe row-border" style="width:100%"></table></div></div></div> </div></div></div>
+<script>
+var cols_autotab = [{ title: 'Origin' },{ title: 'Mean Price ($)' },{ title: 'Mean MPG' },{ title: 'Mean Weight (lbs)' },{ title: 'Mean Length (in)' },{ title: 'Number of Cars' },]; var data_autotab = [['Domestic', 6072.4228515625, 19.82692337036133, 3317.115478515625, 196.1346130371094, 52, ],['Foreign', 6384.681640625, 24.77272796630859, 2315.9091796875, 168.5454559326172, 22, ],]; window.table_autotab = null;
+$(document).ready(function(){ window.table_autotab = $('#autotab').DataTable({data:data_autotab, columns:cols_autotab, pageLength:10}); });
+function updateDashboard(){ try{ 
+
+ }catch(e){console.warn('Dashboard update failed:', e);} }
+$(document).ready(function(){ setTimeout(updateDashboard, 700); });
+</script></body></html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><title>Live Histogram Simulator</title>
+<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
+<link rel='stylesheet' type='text/css' href='https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css'/>
+<script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+<script type='text/javascript' src='https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js'></script>
+<script type='text/javascript' src='https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js'></script>
+<style>body{padding:30px;background:#f8f9fa;font-family:sans-serif;}.statashiny-component{border:none;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.05);background:white;margin-bottom:1.5rem;}.sidebar{padding:25px;background:#fff;}.form-label{font-weight:700;font-size:0.75rem;color:#666;}.uppercase{text-transform:uppercase;letter-spacing:1px;}</style></head><body>
+<div class='container-fluid'><div class='row mb-2'><div class='col-12'><h2 class='fw-bold text-dark'>Live Histogram Simulator</h2>
+<h5 class='text-muted'>Drag the inputs -- the chart redraws instantly</h5>
+<hr></div></div><div class='row'>
+<div class='col-md-3'><div class='statashiny-component sidebar shadow-sm'><h6>Parameters</h6><hr>  <div class="mb-3"><label class="form-label small uppercase fw-bold">Sample Size</label><input type="number" class="form-control form-control-sm" id="obs" value="1000" min="100" max="1000" step="100" oninput="updateDashboard()"></div> <div class="mb-3"><label class="form-label small uppercase fw-bold">Number of Bins</label><input type="number" class="form-control form-control-sm" id="bins" value="20" min="5" max="50" step="1" oninput="updateDashboard()"></div> </div></div>
+<div class='col-md-9'>  <div class="card mb-3 statashiny-component"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted uppercase small fw-bold">Simulated Normal Histogram</h6><div class="card-text h4 text-primary"><span id="chart_container">---</span></div></div></div> </div></div></div>
+<script>
+function updateDashboard(){ try{ 
+ if (!window.hChart) {  let ctx = document.getElementById('chart_container');  let cv = document.createElement('canvas'); ctx.appendChild(cv);  window.hChart = new Chart(cv, { type: 'bar', data: { labels: [],  datasets: [{label: 'Frequency', data: [], backgroundColor: '#0d6efd'}] } });  }  let n = parseInt(document.getElementById('obs').value);  let b = parseInt(document.getElementById('bins').value);  let data = []; for(let i=0; i<n; i++) { let s=0; for(let j=0; j<6; j++) s+=Math.random(); data.push(s-3); }  let counts = new Array(b).fill(0);  data.forEach(v => { let idx = Math.floor(((v+3)/6)*b); if(idx>=0 && idx<b) counts[idx]++; });  window.hChart.data.labels = Array.from({length: b}, (_, i) => (i - b/2).toFixed(1));  window.hChart.data.datasets[0].data = counts; window.hChart.update(); 
+ }catch(e){console.warn('Dashboard update failed:', e);} }
+$(document).ready(function(){ setTimeout(updateDashboard, 700); });
+</script></body></html>
