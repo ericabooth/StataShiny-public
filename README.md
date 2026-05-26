@@ -10,7 +10,7 @@
 
 You write Stata; `statashiny` writes the HTML, CSS, and JavaScript. The output is one portable file you can email, drop on a shared drive, host on GitHub Pages, or embed inside a [`webdoc2`](https://github.com/ericabooth/webdoc2-stata-public) report with an `<iframe>`.
 
-> 🔗 **See it live:** [**ericabooth.github.io/statashiny_Example_Site**](https://ericabooth.github.io/statashiny_Example_Site/) — a working example site built entirely with `statashiny` (+ `webdoc2`) and hosted free on GitHub Pages.
+> 🔗 **See it live:** [**[ericabooth.github.io/statashiny_Example_Site](https://ericabooth.github.io/StataShiny_Example_Site/)**] — a working example site built entirely with `statashiny` (+ `webdoc2`) and hosted free on GitHub Pages.
 
 ---
 
@@ -149,7 +149,7 @@ Full reference with five worked examples (CI explorer, policy simulator, histogr
 
 ## Publishing to GitHub Pages (like the demo site)
 
-The demo at [ericabooth.github.io/statashiny_Example_Site](https://ericabooth.github.io/statashiny_Example_Site/) is just `statashiny` output committed to a repo with Pages turned on:
+The demo at[ [ericabooth.github.io/statashiny_Example_Site]([https://ericabooth.github.io/statashiny_Example_Site/](https://ericabooth.github.io/StataShiny_Example_Site/)) ](https://ericabooth.github.io/StataShiny_Example_Site/) is just `statashiny` output committed to a repo with Pages turned on:
 
 1. Put your built `.html` files (report + widgets, all in one folder) in a GitHub repo.
 2. Repo **Settings → Pages → Source: Deploy from a branch**, pick `main` and `/ (root)`.
