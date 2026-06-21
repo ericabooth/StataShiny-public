@@ -298,7 +298,7 @@ program define _statashiny_build
     if "`open'" != "" {
         cap file close _ss_fh
         tempfile _ss_sh
-        if "`c(os)'" == "MacOSX" {
+        if ("`c(os)'" == "MacOSX") | regexm("`c(machine_type)'", "Mac") {     // Apple-Silicon Stata reports c(os)=="Unix"
             file open _ss_fh using "`_ss_sh'", write text replace
             file write _ss_fh "/usr/bin/open " _char(34) `"`path'"' _char(34) _n
             file close _ss_fh
