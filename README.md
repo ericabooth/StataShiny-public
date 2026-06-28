@@ -31,19 +31,12 @@ And because the output is plain HTML with CDN-loaded libraries, **there's nothin
 `statashiny` is **standalone** — for basic dashboards it has no Stata dependencies (the interactive libraries load from public CDNs in the browser at view time).
 
 ```stata
-net install statashiny, ///
-    from("https://raw.githubusercontent.com/ericabooth/statashiny-stata-public/main/") ///
-    replace
-```
-
-Confirm it's ready:
-
-```stata
+net install statashiny, from("https://raw.githubusercontent.com/ericbooth/statashiny-stata/master/") replace
 which statashiny
-help  statashiny
+help statashiny
 ```
 
-Requires Stata 16+. To also build full report *pages* around your dashboards (as in the combined example below), install [`webdoc2`](https://github.com/ericabooth/webdoc2-stata-public) too — but that's optional.
+Requires Stata 16+. To also build full report *pages* around your dashboards (as in the combined example below), install [`webdoc2`](https://github.com/ericbooth/webdoc2-stata) too — but that's optional.
 
 Manual install: drop `statashiny.ado` and `statashiny.sthlp` anywhere on your Stata `adopath`.
 
@@ -161,6 +154,6 @@ Because Pages serves over `https://`, the `file://` iframe restriction disappear
 
 ## Author
 
-Eric A. Booth · Texas 2036 · [eric.a.booth@gmail.com](mailto:eric.a.booth@gmail.com) · [@ericabooth](https://github.com/ericabooth)
+Eric A. Booth, Sr Researcher, Texas2036.org (eric.a.booth@gmail.com).
 
 Issues and PRs welcome at [github.com/ericabooth/statashiny-stata-public](https://github.com/ericabooth/statashiny-stata-public).

@@ -1,1 +1,43 @@
-.DS_store
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# --- Editor / IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# --- Stata: logs + scratch ---
+*.log
+*.smcl
+*.stmem
+*.gph
+*.scheme.bak
+
+# --- Build / test / demo output ---
+*_demo_out/
+*_test_out/
+*_helpfile_out/
+*_out/
+test_*.html
+demo_*.html
+
+# NOTE: *.dta is intentionally NOT ignored -- some packages ship
+# sample datasets.  Add per-package overrides if needed.
+
+# --- Secrets / OAuth credentials ---
+client_secret*.json
+token*.json
+*.env
+*credentials*
