@@ -31,12 +31,12 @@ And because the output is plain HTML with CDN-loaded libraries, **there's nothin
 `statashiny` is **standalone** — for basic dashboards it has no Stata dependencies (the interactive libraries load from public CDNs in the browser at view time).
 
 ```stata
-net install statashiny, from("https://raw.githubusercontent.com/ericbooth/statashiny-stata/master/") replace
+net install statashiny, from("https://raw.githubusercontent.com/ericabooth/statashiny-stata/master/") replace
 which statashiny
 help statashiny
 ```
 
-Requires Stata 16+. To also build full report *pages* around your dashboards (as in the combined example below), install [`webdoc2`](https://github.com/ericbooth/webdoc2-stata) too — but that's optional.
+Requires Stata 16+. To also build full report *pages* around your dashboards (as in the combined example below), install [`webdoc2`](https://github.com/ericabooth/webdoc2-stata) too — but that's optional.
 
 Manual install: drop `statashiny.ado` and `statashiny.sthlp` anywhere on your Stata `adopath`.
 
