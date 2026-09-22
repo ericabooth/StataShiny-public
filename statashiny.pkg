@@ -6,7 +6,7 @@ d using Bootstrap 5 (layout), DataTables (searchable/sortable tables), and
 d Chart.js (live charts). Define numeric and checkbox inputs, value cards,
 d data tables from variables in memory, and JavaScript-driven visualizations
 d that recompute in the browser -- no web-dev required. Output is a single
-d self-contained .html file you can email, host, or embed via <iframe>
+d self-contained .html file you can email, host, or embed as an iframe
 d (pairs naturally with webdoc2 reports).
 d
 d KW: dashboard
@@ -20,9 +20,9 @@ d KW: visualization
 d
 d Requires: Stata version 16
 d
-d Author: Eric A. Booth, Sr Researcher, Texas2036.org
+d Author: Eric A. Booth, Sr Researcher, Texas 2036
 d Support: eric.a.booth@gmail.com
-d Distribution-Date: 20260526
+d Distribution-Date: 20260802
 d
 f statashiny.ado
 f statashiny.sthlp
