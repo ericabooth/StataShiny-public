@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.5.2 02aug2026 Eric A. Booth}{...}
+{* *! version 1.5.3 09nov2026 Eric A. Booth}{...}
 {viewerjumpto "Syntax" "statashiny##syntax"}{...}
 {viewerjumpto "Options" "statashiny##options"}{...}
 {viewerjumpto "Description" "statashiny##description"}{...}
@@ -69,7 +69,9 @@ Consolidated Syntax (Recommended):
 {opt vars(varlist)}: Specifies variables from Stata memory to include in an {opt output(table)}.
 Labeled numeric variables display their value-label text (e.g. {cmd:Foreign} instead of {cmd:1});
 unlabeled values fall back to the number, string variables are shown as-is, and missing values
-are blank.
+are blank. Text with quotes, apostrophes, backslashes, line breaks, or {cmd:<} characters (such as
+{cmd:</script>}) is escaped for the page's JavaScript, so it can no longer break the table; a line
+break inside a value shows as a space when the browser renders the cell.
 
 {phang}
 {opt toggles}: (With {opt output(table)}) Automatically generates column-toggling checkboxes in the sidebar.

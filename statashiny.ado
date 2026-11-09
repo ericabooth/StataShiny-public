@@ -1,3 +1,9 @@
+*! version 1.5.3  09nov2026  Eric A. Booth
+*! - escape line breaks (LF, CR, U+2028, U+2029) and "<" in string values,
+*!   variable labels and value labels.  A free-text value with a line break,
+*!   or one holding </script>, broke the whole <script> block, so every table
+*!   on the page rendered empty while -build- reported success.  All escaping
+*!   now goes through one Mata helper, _statashiny_jsesc().
 *! version 1.5.2  02aug2026  Eric A. Booth
 *! - also escape the double quote.  A value or label containing one, e.g. a
 *!   6" pipe or a label like the "quoted" column, aborted -build- with r(198)
@@ -298,10 +304,9 @@ program define _statashiny_build
             if "`lab'" == "" local lab "`v'"
             * A label such as "Client's score" used to close the JS string
             * early, so the whole <script> block failed to parse and the table
-            * rendered empty.  Escape it, the way the value-label path below does.
-            local lab = subinstr(`"`macval(lab)'"', "\", "\\", .)
-            local lab = subinstr(`"`macval(lab)'"', char(34), char(92)+"u0022", .)
-            local lab = subinstr(`"`macval(lab)'"', "'", "\'", .)
+            * rendered empty.  Escape it with the same helper as the values
+            * (_statashiny_jsesc, at the end of this file).
+            mata: st_local("lab", _statashiny_jsesc(st_local("lab")))
             file write `fh' `"{ title: '`macval(lab)'' },"'
         }
         file write `fh' "]; var data_`id' = ["
@@ -315,9 +320,7 @@ program define _statashiny_build
                     * array -- the table then rendered empty, with nothing but a
                     * console error to show for it.
                     local val = `v'[`i']
-                    local val = subinstr(`"`macval(val)'"', "\", "\\", .)
-                    local val = subinstr(`"`macval(val)'"', char(34), char(92)+"u0022", .)
-                    local val = subinstr(`"`macval(val)'"', "'", "\'", .)
+                    mata: st_local("val", _statashiny_jsesc(st_local("val")))
                     file write `fh' `"'`macval(val)'', "'
                 }
                 else if missing(`v'[`i']) {
@@ -334,9 +337,7 @@ program define _statashiny_build
                     local vlname : value label `v'
                     if "`vlname'" != "" & `val' == int(`val') {
                         local lbl : label `vlname' `val'
-                        local lbl = subinstr(`"`macval(lbl)'"', "\", "\\", .)
-                        local lbl = subinstr(`"`macval(lbl)'"', char(34), char(92)+"u0022", .)
-                        local lbl = subinstr(`"`macval(lbl)'"', "'", "\'", .)
+                        mata: st_local("lbl", _statashiny_jsesc(st_local("lbl")))
                         file write `fh' `"'`macval(lbl)'', "'
                     }
                     else {
@@ -381,4 +382,33 @@ program define _statashiny_build
             shell sh "`_ss_sh'"
         }
     }
+end
+
+* ---------------------------------------------------------------------------
+* _statashiny_jsesc: make text safe inside a single-quoted JavaScript string
+* that sits in an inline <script> block.  Used for string values, variable
+* labels and value labels.  A raw line break (LF, CR, U+2028, U+2029) ends a
+* JS string literal, and a "</script>" in the text ends the whole <script>
+* element; either one left every table on the page empty while -build-
+* reported success.  Every "<" is written as the escape backslash-u-003c, which
+* also covers "</script>" and "<!--"; the browser decodes it back to "<", so
+* the table shows the same text.  The double quote becomes backslash-u-0022 so
+* no quote character reaches the Stata string that -file write- parses.
+* Backslash goes first so the escapes added after it are not doubled.
+* ---------------------------------------------------------------------------
+mata:
+string scalar _statashiny_jsesc(string scalar s)
+{
+    string scalar bs
+    bs = char(92)
+    s = subinstr(s, bs, bs + bs)
+    s = subinstr(s, char(34), bs + "u0022")
+    s = subinstr(s, "'", bs + "'")
+    s = subinstr(s, char(13), bs + "r")
+    s = subinstr(s, char(10), bs + "n")
+    s = subinstr(s, uchar(8232), bs + "u2028")
+    s = subinstr(s, uchar(8233), bs + "u2029")
+    s = subinstr(s, "<", bs + "u003c")
+    return(s)
+}
 end

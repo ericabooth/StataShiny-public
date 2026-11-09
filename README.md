@@ -153,6 +153,12 @@ Because Pages serves over `https://`, the `file://` iframe restriction disappear
 
 ---
 
+## Changes
+
+- 1.5.3 (9 Nov 2026): string values, variable labels and value labels that contain a line break or `</script>` no longer break the page. Before, one such value made every table on the page render empty while `build` still reported success.
+
+---
+
 ## Author
 
 Eric A. Booth, Sr Researcher, Texas 2036 (eric.a.booth@gmail.com).
