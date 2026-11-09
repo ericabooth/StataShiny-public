@@ -6,8 +6,9 @@ d using Bootstrap 5 (layout), DataTables (searchable/sortable tables), and
 d Chart.js (live charts). Define numeric and checkbox inputs, value cards,
 d data tables from variables in memory, and JavaScript-driven visualizations
 d that recompute in the browser -- no web-dev required. Output is a single
-d self-contained .html file you can email, host, or embed as an iframe
-d (pairs naturally with webdoc2 reports).
+d .html file you can email, host, or embed as an iframe (pairs naturally
+d with webdoc2 reports); it loads its libraries from CDNs, so viewing it
+d needs an internet connection.
 d
 d KW: dashboard
 d KW: html

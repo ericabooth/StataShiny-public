@@ -1,3 +1,17 @@
+*! version 1.5.4  09nov2026  Eric A. Booth
+*! - the abbreviations c() for calc(), o(raw) for output(raw) and l() for
+*!   label() work; they were accepted and silently dropped.
+*! - calc() code wrapped in compound quotes (needed when the JavaScript holds a
+*!   double quote) reaches the page without the delimiters, which used to be a
+*!   JS syntax error that disabled the whole dashboard.  Options are found by a
+*!   quote-aware scan, so calc( or label( inside the text no longer misroutes.
+*! - title(), subtitle(), label(), prefix() and suffix() may contain double
+*!   quotes (they stopped with r(198) or "unmatched quote").
+*! - min() and max() are written only when given; the undocumented -1000/1000
+*!   defaults capped larger values.
+*! - an unknown input() or output() type is an error instead of a no-op.
+*! - build export() expands a leading ~ and treats a leading backslash (also
+*!   a \\server UNC path) as absolute.
 *! version 1.5.3  09nov2026  Eric A. Booth
 *! - escape line breaks (LF, CR, U+2028, U+2029) and "<" in string values,
 *!   variable labels and value labels.  A free-text value with a line break,
@@ -24,23 +38,26 @@
 *!   (e.g. "Foreign" instead of 1); falls back to the number when unlabeled.
 program define statashiny
     version 16
-    
-    * 1. Backward Compatibility Check
-    local first : word 1 of `0'
+
+    * 1. Backward Compatibility Check (first word is a legacy subcommand)
+    mata: st_local("first", ustrregexm(st_local("0"), "^[ ]*([A-Za-z_]+)") ? ustrregexs(1) : "")
     if inlist("`first'", "init", "input_num", "input_check", "output_val", "output_table", "output_raw", "data_from_memory", "calc", "build") {
         gettoken subcmd 0 : 0, parse(" ,")
-        _statashiny_`subcmd' `0'
+        _statashiny_`subcmd' `macval(0)'
         exit
     }
 
-    * 2. Raw HTML / Calc Check (Bypass syntax for complex strings)
-    local check : copy local 0
-    if ustrpos(`"`macval(check)'"', "output(raw)") > 0 {
-        _statashiny_handle_raw `0'
+    * 2. Raw HTML / Calc Check (bypass -syntax- for complex strings).
+    *    The scan runs in Mata, outside quoted text, and knows the documented
+    *    abbreviations: o(raw) for output(raw), c() for calc(), l() for label().
+    mata: st_local("israw",  strofreal(_statashiny_hasraw(st_local("0"))))
+    if `israw' {
+        _statashiny_handle_raw `macval(0)'
         exit
     }
-    if ustrpos(`"`macval(check)'"', "calc(") > 0 {
-        _statashiny_handle_calc `0'
+    mata: st_local("iscalc", strofreal(_statashiny_findopt(st_local("0"), ("calc","cal","ca","c"), 0) > 0))
+    if `iscalc' {
+        _statashiny_handle_calc `macval(0)'
         exit
     }
 
@@ -48,44 +65,55 @@ program define statashiny
     syntax [anything(name=id)] [, ///
         Input(string) Output(string) Calc(string) Build ///
         Title(string) Subtitle(string) Replace Open ///
-        Label(string) Val(string) Min(real -1000) Max(real 1000) Step(real 1) ///
+        Label(string) Val(string) Min(string) Max(string) Step(real 1) ///
         Vars(varlist) Checked Toggles ///
         Prefix(string) Suffix(string) ///
         EXPort(string) ]
 
     * Initialization
-    if "`title'" != "" | "`replace'" != "" {
-        _statashiny_init, title(`"`title'"') subtitle(`"`subtitle'"') `replace'
+    if `"`macval(title)'"' != "" | "`replace'" != "" {
+        _statashiny_init, title(`"`macval(title)'"') subtitle(`"`macval(subtitle)'"') `replace'
     }
 
     * Inputs
     if "`input'" != "" {
         if inlist("`input'", "num", "number") {
-            _statashiny_input_num, var("`id'") label("`label'") val("`val'") min(`min') max(`max') step(`step')
+            local mm ""
+            if `"`min'"' != "" local mm `"`mm' min(`min')"'
+            if `"`max'"' != "" local mm `"`mm' max(`max')"'
+            _statashiny_input_num, var("`id'") label(`"`macval(label)'"') val(`"`macval(val)'"') `mm' step(`step')
         }
         else if inlist("`input'", "check", "checkbox") {
-            _statashiny_input_check, var("`id'") label("`label'") `checked'
+            _statashiny_input_check, var("`id'") label(`"`macval(label)'"') `checked'
+        }
+        else {
+            di as error `"statashiny: input(`input') is not a known type; use input(num) or input(check)"'
+            exit 198
         }
     }
 
     * Outputs
     if "`output'" != "" {
         if inlist("`output'", "val", "value") {
-            _statashiny_output_val, id("`id'") label("`label'") prefix("`prefix'") suffix("`suffix'")
+            _statashiny_output_val, id("`id'") label(`"`macval(label)'"') prefix(`"`macval(prefix)'"') suffix(`"`macval(suffix)'"')
         }
         else if "`output'" == "table" {
-            _statashiny_output_table, id("`id'") label("`label'")
+            _statashiny_output_table, id("`id'") label(`"`macval(label)'"')
             _statashiny_data_from_memory, id("`id'") vars(`vars')
             if "`toggles'" != "" {
                 local i = 0
                 foreach v of varlist `vars' {
                     local lab : var label `v'
-                    if "`lab'" == "" local lab "`v'"
-                    _statashiny_input_check, var("toggle_`id'_`i'") label("Show `lab'") checked
+                    if `"`macval(lab)'"' == "" local lab "`v'"
+                    _statashiny_input_check, var("toggle_`id'_`i'") label(`"Show `macval(lab)'"') checked
                     _statashiny_calc "if (window.table_`id') table_`id'.column(`i').visible(document.getElementById('toggle_`id'_`i'').checked);"
                     local ++i
                 }
             }
+        }
+        else {
+            di as error `"statashiny: output(`output') is not a known type; use output(val), output(table) or output(raw)"'
+            exit 198
         }
     }
 
@@ -95,96 +123,99 @@ program define statashiny
     }
     
     * Help fallback
-    if "`id'`input'`output'`calc'`build'`title'" == "" {
+    if `"`id'`input'`output'`build'`replace'"' == "" & `"`macval(title)'"' == "" {
         help statashiny
     }
 end
 
+* output(raw): the HTML is the argument of label() (or l()), taken verbatim
 program define _statashiny_handle_raw
-    local js : copy local 0
-    local start = ustrpos(`"`macval(js)'"', "label(") + 6
-    local rest = usubstr(`"`macval(js)'"', `start', .)
-    local end = ustrrpos(`"`macval(rest)'"', ")")
-    local html = usubstr(`"`macval(rest)'"', 1, `end'-1)
-    local html = strtrim(`"`macval(html)'"')
-    if usubstr(`"`macval(html)'"', 1, 2) == `"`""' & usubstr(`"`macval(html)'"', -2, 2) == `""'"' {
-        local html = usubstr(`"`macval(html)'"', 3, ustrlen(`"`macval(html)'"')-4)
+    mata: st_local("found", strofreal(_statashiny_findopt(st_local("0"), ("label","labe","lab","la","l"), 0) > 0))
+    if !`found' {
+        di as error "statashiny: output(raw) needs the HTML in label(), e.g. label(" _char(34) "<div>...</div>" _char(34) ")"
+        exit 198
     }
-    else if usubstr(`"`macval(html)'"', 1, 1) == `"""' & usubstr(`"`macval(html)'"', -1, 1) == `"""' {
-        local html = usubstr(`"`macval(html)'"', 2, ustrlen(`"`macval(html)'"')-2)
-    }
-    _statashiny_output_raw `macval(html)'
+    mata: st_global("S_outputs", st_global("S_outputs") + " " + _statashiny_optval(st_local("0"), ("label","labe","lab","la","l")))
 end
 
+* calc(): the JavaScript is the argument of calc() (or c()), taken verbatim.
+* Compound quotes `"..."' are stripped here, so code holding a double quote
+* reaches the page without the delimiters.
 program define _statashiny_handle_calc
-    local js : copy local 0
-    local start = ustrpos(`"`macval(js)'"', "calc(") + 5
-    local rest = usubstr(`"`macval(js)'"', `start', .)
-    local end = ustrrpos(`"`macval(rest)'"', ")")
-    local code = usubstr(`"`macval(rest)'"', 1, `end'-1)
-    local code = strtrim(`"`macval(code)'"')
-    if usubstr(`"`macval(code)'"', 1, 2) == `"`""' & usubstr(`"`macval(code)'"', -2, 2) == `""'"' {
-        local code = usubstr(`"`macval(code)'"', 3, ustrlen(`"`macval(code)'"')-4)
-    }
-    else if usubstr(`"`macval(code)'"', 1, 1) == `"""' & usubstr(`"`macval(code)'"', -1, 1) == `"""' {
-        local code = usubstr(`"`macval(code)'"', 2, ustrlen(`"`macval(code)'"')-2)
-    }
-    _statashiny_calc `macval(code)'
+    mata: st_global("S_calc_js", st_global("S_calc_js") + " " + _statashiny_optval(st_local("0"), ("calc","cal","ca","c")) + " ")
 end
 
 program define _statashiny_init
     syntax [, Title(string) Subtitle(string) Replace]
-    if "`title'" == "" local title "StataShiny Dashboard"
-    global S_title `"`title'"'
-    global S_subtitle `"`subtitle'"'
+    if `"`macval(title)'"' == "" local title "StataShiny Dashboard"
+    global S_title `"`macval(title)'"'
+    global S_subtitle `"`macval(subtitle)'"'
     global S_inputs ""
     global S_outputs ""
     global S_calc_js ""
     global S_table_list ""
-    di as txt "StataShiny initialized: `title'"
+    di as txt `"StataShiny initialized: `macval(title)'"'
 end
 
 program define _statashiny_input_num
-    syntax, Var(string) Label(string) [Val(string) Min(real -1000) Max(real 1000) Step(real 1)]
-    if "`val'" == "" local val 0
+    syntax, Var(string) Label(string) [Val(string) Min(string) Max(string) Step(real 1)]
+    if `"`val'"' == "" local val 0
+    * min() and max() are written only when given (they used to default to
+    * -1000 and 1000, which capped any larger value without saying so).
+    local lim ""
+    if `"`min'"' != "" {
+        capture confirm number `min'
+        if _rc {
+            di as error `"statashiny: min(`min') is not a number"'
+            exit 198
+        }
+        local lim `"`lim' min="`min'""'
+    }
+    if `"`max'"' != "" {
+        capture confirm number `max'
+        if _rc {
+            di as error `"statashiny: max(`max') is not a number"'
+            exit 198
+        }
+        local lim `"`lim' max="`max'""'
+    }
     local html `"<div class="mb-3">"'
-    local html `"`html'<label class="form-label small uppercase fw-bold">`label'</label>"'
-    local html `"`html'<input type="number" class="form-control form-control-sm" id="`var'" value="`val'" min="`min'" max="`max'" step="`step'" oninput="updateDashboard()">"'
-    local html `"`html'</div>"'
-    global S_inputs `"$S_inputs `html'"'
+    local html `"`macval(html)'<label class="form-label small uppercase fw-bold">`macval(label)'</label>"'
+    local html `"`macval(html)'<input type="number" class="form-control form-control-sm" id="`var'" value="`macval(val)'"`lim' step="`step'" oninput="updateDashboard()">"'
+    local html `"`macval(html)'</div>"'
+    mata: st_global("S_inputs", st_global("S_inputs") + " " + st_local("html"))
 end
 
 program define _statashiny_input_check
     syntax, Var(string) Label(string) [Checked]
     local chk = cond("`checked'"!="", "checked", "")
     local html `"<div class="form-check mb-2">"'
-    local html `"`html'<input class="form-check-input" type="checkbox" id="`var'" `chk' onchange="updateDashboard()">"'
-    local html `"`html'<label class="form-check-label small">`label'</label>"'
-    local html `"`html'</div>"'
-    global S_inputs `"$S_inputs `html'"'
+    local html `"`macval(html)'<input class="form-check-input" type="checkbox" id="`var'" `chk' onchange="updateDashboard()">"'
+    local html `"`macval(html)'<label class="form-check-label small">`macval(label)'</label>"'
+    local html `"`macval(html)'</div>"'
+    mata: st_global("S_inputs", st_global("S_inputs") + " " + st_local("html"))
 end
 
 program define _statashiny_output_val
     syntax, Id(string) Label(string) [Prefix(string) Suffix(string)]
     local html `"<div class="card mb-3 statashiny-component"><div class="card-body">"'
-    local html `"`html'<h6 class="card-subtitle mb-2 text-muted uppercase small fw-bold">`label'</h6>"'
-    local html `"`html'<div class="card-text h4 text-primary">`prefix'<span id="`id'">---</span>`suffix'</div>"'
-    local html `"`html'</div></div>"'
-    global S_outputs `"$S_outputs `html'"'
+    local html `"`macval(html)'<h6 class="card-subtitle mb-2 text-muted uppercase small fw-bold">`macval(label)'</h6>"'
+    local html `"`macval(html)'<div class="card-text h4 text-primary">`macval(prefix)'<span id="`id'">---</span>`macval(suffix)'</div>"'
+    local html `"`macval(html)'</div></div>"'
+    mata: st_global("S_outputs", st_global("S_outputs") + " " + st_local("html"))
 end
 
 program define _statashiny_output_raw
-    local html : copy local 0
-    global S_outputs `"$S_outputs `macval(html)'"'
+    mata: st_global("S_outputs", st_global("S_outputs") + " " + st_local("0"))
 end
 
 program define _statashiny_output_table
     syntax, Id(string) Label(string)
     local html `"<div class="card mb-3 statashiny-component"><div class="card-body">"'
-    local html `"`html'<h6 class="card-subtitle mb-3 text-muted uppercase small fw-bold">`label'</h6>"'
-    local html `"`html'<div class="table-responsive"><table id="`id'" class="table table-hover table-sm stripe row-border" style="width:100%"></table></div>"'
-    local html `"`html'</div></div>"'
-    global S_outputs `"$S_outputs `html'"'
+    local html `"`macval(html)'<h6 class="card-subtitle mb-3 text-muted uppercase small fw-bold">`macval(label)'</h6>"'
+    local html `"`macval(html)'<div class="table-responsive"><table id="`id'" class="table table-hover table-sm stripe row-border" style="width:100%"></table></div>"'
+    local html `"`macval(html)'</div></div>"'
+    mata: st_global("S_outputs", st_global("S_outputs") + " " + st_local("html"))
 end
 
 program define _statashiny_data_from_memory
@@ -193,15 +224,7 @@ program define _statashiny_data_from_memory
 end
 
 program define _statashiny_calc
-    local js : copy local 0
-    local js = strtrim(`"`macval(js)'"')
-    if usubstr(`"`macval(js)'"', 1, 2) == `"`""' & usubstr(`"`macval(js)'"', -2, 2) == `""'"' {
-        local js = usubstr(`"`macval(js)'"', 3, ustrlen(`"`macval(js)'"')-4)
-    }
-    else if usubstr(`"`macval(js)'"', 1, 1) == `"""' & usubstr(`"`macval(js)'"', -1, 1) == `"""' {
-        local js = usubstr(`"`macval(js)'"', 2, ustrlen(`"`macval(js)'"')-2)
-    }
-    global S_calc_js `"$S_calc_js `macval(js)' "'
+    mata: st_global("S_calc_js", st_global("S_calc_js") + " " + _statashiny_unquote(st_local("0")) + " ")
 end
 
 program define _statashiny_build
@@ -217,8 +240,28 @@ program define _statashiny_build
     }
     else {
         local path `"`export'"'
-        * Treat as relative if it doesn't start with "/" (Unix) or a drive letter (Windows).
-        if substr(`"`path'"', 1, 1) != "/" & substr(`"`path'"', 2, 1) != ":" {
+        * Expand a leading ~ (Stata's file commands accept it, but the
+        * relative test below used to turn it into <cwd>/~/...).
+        if `"`path'"' == "~" | substr(`"`path'"', 1, 2) == "~/" | substr(`"`path'"', 1, 2) == "~" + char(92) {
+            local home : env HOME
+            if "`c(os)'" == "Windows" {
+                local up : env USERPROFILE
+                if `"`up'"' != "" local home `"`up'"'
+                if `"`home'"' == "" {
+                    local hd : env HOMEDRIVE
+                    local hp : env HOMEPATH
+                    local home `"`hd'`hp'"'
+                }
+            }
+            if `"`home'"' == "" {
+                di as error "statashiny build: cannot expand ~ (HOME is not set)"
+                exit 198
+            }
+            local path `"`home'`=substr(`"`path'"', 2, .)'"'
+        }
+        * Treat as relative unless it starts with "/" (Unix), "\" (Windows,
+        * including \\server UNC paths) or a drive letter.
+        if substr(`"`path'"', 1, 1) != "/" & substr(`"`path'"', 1, 1) != char(92) & substr(`"`path'"', 2, 1) != ":" {
             local path `"`c(pwd)'/`path'"'
         }
     }
@@ -256,7 +299,7 @@ program define _statashiny_build
         di as txt "statashiny build: no title() was set; using the default."
     }
 
-    file write `fh' "<!DOCTYPE html><html><head><meta charset='utf-8'><title>`macval(title)'</title>" _n
+    file write `fh' `"<!DOCTYPE html><html><head><meta charset='utf-8'><title>`macval(title)'</title>"' _n
     file write `fh' "<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>" _n
     file write `fh' "<link rel='stylesheet' type='text/css' href='https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css'/>" _n
     file write `fh' "<script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>" _n
@@ -265,7 +308,7 @@ program define _statashiny_build
     file write `fh' "<script type='text/javascript' src='https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js'></script>" _n
     file write `fh' "<style>body{padding:30px;background:#f8f9fa;font-family:sans-serif;}.statashiny-component{border:none;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.05);background:white;margin-bottom:1.5rem;}.sidebar{padding:25px;background:#fff;}.form-label{font-weight:700;font-size:0.75rem;color:#666;}.uppercase{text-transform:uppercase;letter-spacing:1px;}</style></head><body>" _n
 
-    file write `fh' "<div class='container-fluid'><div class='row mb-2'><div class='col-12'><h2 class='fw-bold text-dark'>`macval(title)'</h2>" _n
+    file write `fh' `"<div class='container-fluid'><div class='row mb-2'><div class='col-12'><h2 class='fw-bold text-dark'>`macval(title)'</h2>"' _n
     if `"`macval(subtitle)'"' != "" {
         file write `fh' `"<h5 class='text-muted'>`macval(subtitle)'</h5>"' _n
     }
@@ -410,5 +453,128 @@ string scalar _statashiny_jsesc(string scalar s)
     s = subinstr(s, uchar(8233), bs + "u2029")
     s = subinstr(s, "<", bs + "u003c")
     return(s)
+}
+
+// ---------------------------------------------------------------------------
+// Option scanning for the calc()/output(raw) bypass.  User text often holds
+// quotes, parentheses and the very words "calc(" or "label(", so the scan
+// skips anything inside "..." or compound quotes and matches option names
+// only at the start of the line or after a space or comma.
+// ---------------------------------------------------------------------------
+
+// position of the first top-level  name(  for any name in nm (longest
+// names first); 0 when absent.  The name's length goes to len.
+real scalar _statashiny_findopt(string scalar s, string rowvector nm, real scalar len)
+{
+    real scalar i, j, n, depth, inq, L
+    string scalar c, c2, prev
+    n = strlen(s)
+    depth = 0
+    inq = 0
+    for (i = 1; i <= n; i++) {
+        c  = substr(s, i, 1)
+        c2 = substr(s, i, 2)
+        if (!inq & c2 == char(96) + char(34)) {
+            depth++
+            i++
+            continue
+        }
+        if (depth > 0 & c2 == char(34) + char(39)) {
+            depth--
+            i++
+            continue
+        }
+        if (depth > 0) continue
+        if (c == char(34)) {
+            inq = !inq
+            continue
+        }
+        if (inq) continue
+        prev = (i == 1 ? " " : substr(s, i - 1, 1))
+        if (prev != " " & prev != ",") continue
+        for (j = 1; j <= cols(nm); j++) {
+            L = strlen(nm[j])
+            if (strlower(substr(s, i, L + 1)) == nm[j] + "(") {
+                len = L
+                return(i)
+            }
+        }
+    }
+    len = 0
+    return(0)
+}
+
+// the text between the "(" at position open and its matching ")", with
+// quoted text skipped while matching
+string scalar _statashiny_argat(string scalar s, real scalar open)
+{
+    real scalar i, n, depth, inq, par
+    string scalar c, c2
+    n = strlen(s)
+    depth = 0
+    inq = 0
+    par = 0
+    for (i = open; i <= n; i++) {
+        c  = substr(s, i, 1)
+        c2 = substr(s, i, 2)
+        if (!inq & c2 == char(96) + char(34)) {
+            depth++
+            i++
+            continue
+        }
+        if (depth > 0 & c2 == char(34) + char(39)) {
+            depth--
+            i++
+            continue
+        }
+        if (depth > 0) continue
+        if (c == char(34)) {
+            inq = !inq
+            continue
+        }
+        if (inq) continue
+        if (c == "(") par++
+        if (c == ")") {
+            par--
+            if (par == 0) return(substr(s, open + 1, i - open - 1))
+        }
+    }
+    // unbalanced: everything after "(" up to the last ")"
+    return(substr(s, open + 1, max((0, strrpos(s, ")") - open - 1))))
+}
+
+// strip one layer of compound quotes `"..."' or plain quotes "..."
+string scalar _statashiny_unquote(string scalar s)
+{
+    real scalar n
+    s = strtrim(s)
+    n = strlen(s)
+    if (n >= 4 & substr(s, 1, 2) == char(96) + char(34) & substr(s, n - 1, 2) == char(34) + char(39)) {
+        return(substr(s, 3, n - 4))
+    }
+    if (n >= 2 & substr(s, 1, 1) == char(34) & substr(s, n, 1) == char(34)) {
+        return(substr(s, 2, n - 2))
+    }
+    return(s)
+}
+
+// the unquoted argument of the first top-level option named in nm
+string scalar _statashiny_optval(string scalar s, string rowvector nm)
+{
+    real scalar p, L
+    L = 0
+    p = _statashiny_findopt(s, nm, L)
+    if (p == 0) return("")
+    return(_statashiny_unquote(_statashiny_argat(s, p + L)))
+}
+
+// is there a top-level output(raw) (or o(raw), out( raw ), ...)?
+real scalar _statashiny_hasraw(string scalar s)
+{
+    real scalar p, L
+    L = 0
+    p = _statashiny_findopt(s, ("output","outpu","outp","out","ou","o"), L)
+    if (p == 0) return(0)
+    return(strlower(strtrim(_statashiny_argat(s, p + L))) == "raw")
 }
 end

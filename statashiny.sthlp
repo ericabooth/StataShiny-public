@@ -1,11 +1,12 @@
 {smcl}
-{* *! version 1.5.3 09nov2026 Eric A. Booth}{...}
+{* *! version 1.5.4 09nov2026 Eric A. Booth}{...}
 {viewerjumpto "Syntax" "statashiny##syntax"}{...}
 {viewerjumpto "Options" "statashiny##options"}{...}
 {viewerjumpto "Description" "statashiny##description"}{...}
 {viewerjumpto "Integration" "statashiny##integration"}{...}
 {viewerjumpto "Examples" "statashiny##examples"}{...}
 {viewerjumpto "How it fits together" "statashiny##model"}{...}
+{viewerjumpto "Changes" "statashiny##changes"}{...}
 {viewerjumpto "Author" "statashiny##author"}{...}
 {hline}
 Help file for {hi:statashiny}
@@ -30,8 +31,10 @@ Consolidated Syntax (Recommended):
 {synopthdr:Core Options}
 {synoptline}
 {synopt:{opt i:nput(type)}}Define an input component. {it:type} can be {cmd:num} (numeric input) or {cmd:check} (checkbox).{p_end}
-{synopt:{opt o:utput(type)}}Define an output component. {it:type} can be {cmd:val} (card with a value), {cmd:table} (DataTable), or {cmd:raw} (raw HTML).{p_end}
+{synopt:{opt o:utput(type)}}Define an output component. {it:type} can be {cmd:val} (card with a value), {cmd:table} (DataTable), or {cmd:raw} (raw HTML, given in {opt label()}).{p_end}
 {synopt:{opt c:alc(string)}}Add JavaScript logic to the {cmd:updateDashboard()} function.{p_end}
+{synoptline}
+{p 4 6 2}Any other {opt input()} or {opt output()} type is an error (r(198)).{p_end}
 {synopt:{opt build}}Finalize and generate the HTML dashboard.{p_end}
 {synoptline}
 
@@ -48,7 +51,15 @@ Consolidated Syntax (Recommended):
 {opt subt:itle(string)}: Sets a subtitle displayed below the main title.
 
 {phang}
-{opt replace}: Required to overwrite an existing dashboard file.
+{opt replace}: Starts a new dashboard and clears the components registered so
+far. It does not control the output file: {cmd:build} always overwrites the
+file named in {opt export()}.
+
+{phang}
+{opt t:itle()}, {opt subt:itle()}, {opt l:abel()}, {opt prefix()} and
+{opt suffix()} may contain double quotes; wrap such text in compound quotes,
+for example {cmd:title(`"The "best" cars"')}. Their text is written into the
+page as given, so HTML tags in it are rendered.
 
 {pstd}
 {bf:Input/Output Options}
@@ -60,7 +71,10 @@ Consolidated Syntax (Recommended):
 {opt val(string)}: Initial value for numeric inputs.
 
 {phang}
-{opt min(real)}, {opt max(real)}, {opt step(real)}: Constraints for numeric inputs.
+{opt min(#)}, {opt max(#)}, {opt step(#)}: Constraints for numeric inputs.
+{opt min()} and {opt max()} are written to the page only when you give them,
+so by default the input has no lower or upper limit. {opt step()} defaults to
+{cmd:1}.
 
 {phang}
 {opt checked}: Sets a checkbox to checked by default.
@@ -92,7 +106,10 @@ break inside a value shows as a space when the browser renders the cell.
 working directory ({cmd:c(pwd)}){p_end}
 {p 12 14 2}{cmd: -} a relative path ({cmd:reports/dashboard.html}) — saved relative to
 the current working directory{p_end}
-{p 12 14 2}{cmd: -} an absolute path ({cmd:/Users/me/Desktop/dash.html}) — used verbatim{p_end}
+{p 12 14 2}{cmd: -} an absolute path ({cmd:/Users/me/Desktop/dash.html}, {cmd:C:/reports/dash.html},
+or a path starting with a backslash, including {cmd:\\server} UNC paths) — used verbatim{p_end}
+{p 12 14 2}{cmd: -} a path starting with {cmd:~} — expanded from {cmd:HOME}
+({cmd:USERPROFILE} on Windows){p_end}
 
 {phang2}
 Default: {cmd:statashiny_dashboard.html} in the current working directory.
@@ -110,6 +127,11 @@ in the {it:same directory} when opened via {cmd:file://}
 It uses Bootstrap 5 for layout, Chart.js for visualization, and DataTables for interactive tables. 
 If no inputs are defined, the dashboard automatically adjusts to a full-width layout.
 
+{pstd}
+The page is a single {cmd:.html} file, but it loads Bootstrap, jQuery,
+DataTables and Chart.js from public CDNs when it is opened, so viewing it needs
+an internet connection.
+
 
 {marker model}{...}
 {title:How it fits together}
@@ -119,7 +141,9 @@ A dashboard is assembled in four steps, in this order:{p_end}
 
 {phang2}1. {cmd:statashiny, title("...") replace} starts a new dashboard.{p_end}
 {phang2}2. {cmd:statashiny} {it:id}{cmd:, input(...)} adds a control; {cmd:output(...)} adds a panel.{p_end}
-{phang2}3. {cmd:statashiny, calc("...")} adds JavaScript that runs whenever a control changes.{p_end}
+{phang2}3. {cmd:statashiny, calc("...")} adds JavaScript that runs whenever a control changes.
+If the JavaScript itself contains a double quote, wrap it in compound quotes:
+{cmd:calc(`"el.innerHTML = "$" + x;"')}.{p_end}
 {phang2}4. {cmd:statashiny, build} writes the file.{p_end}
 
 {pstd}
@@ -172,6 +196,7 @@ report and use a relative path in the {cmd:<iframe>}:
 
 {hline}
 {cmd}
+    sysuse auto, clear
     statashiny, title("Searchable Auto Table") replace
     statashiny mytable, output(table) label("Auto Descriptives") ///
              vars(foreign price mpg weight length)
@@ -507,6 +532,21 @@ With {cmd:sysuse auto} this shows 74 cars and a mean price of 6165, matching
 table; untick the box and the notes panel disappears. The last {opt calc()}
 line matters: a DataTable that was hidden when it was first drawn has no column
 widths to work from, so ask it to recompute them when it becomes visible.{p_end}
+
+
+{marker changes}{...}
+{title:Changes}
+
+{phang}1.5.4 (09nov2026): the abbreviations {cmd:c()}, {cmd:o(raw)} and
+{cmd:l()} work (they were silently dropped); compound-quoted {opt calc()} code
+reaches the page without its delimiters; double quotes in {opt title()},
+{opt label()} and the other text options no longer stop the command;
+{opt min()} and {opt max()} are written only when given (they defaulted to
+-1000 and 1000); an unknown {opt input()} or {opt output()} type is an error;
+{opt export()} expands a leading {cmd:~} and accepts backslash and UNC paths.{p_end}
+
+{phang}1.5.3 (09nov2026): line breaks and {cmd:</script>} in table data no
+longer blank the page.{p_end}
 
 
 {marker author}{...}

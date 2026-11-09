@@ -2,15 +2,15 @@
 
 **Build interactive HTML dashboards, calculators, and searchable data tables straight from Stata — no web development required.**
 
-`statashiny` turns Stata variables and coefficients into a single self-contained `.html` file with live, interactive widgets:
+`statashiny` turns Stata variables and coefficients into a single `.html` file with live, interactive widgets:
 
 - **Searchable, sortable data tables** (powered by DataTables)
 - **Live charts** that recompute in the browser as you move sliders (powered by Chart.js)
 - **Value cards, numeric inputs, checkboxes** laid out with Bootstrap 5
 
-You write Stata; `statashiny` writes the HTML, CSS, and JavaScript. The output is one portable file you can email, drop on a shared drive, host on GitHub Pages, or embed inside a [`webdoc2`](https://github.com/ericabooth/webdoc2-stata-public) report with an `<iframe>`.
+You write Stata; `statashiny` writes the HTML, CSS, and JavaScript. The output is one portable file (it loads its libraries from CDNs, so the viewer needs internet) you can email, drop on a shared drive, host on GitHub Pages, or embed inside a [`webdoc2`](https://github.com/ericabooth/webdoc2-stata-public) report with an `<iframe>`.
 
-> 🔗 **See it live:** [**[ericabooth.github.io/statashiny_Example_Site](https://ericabooth.github.io/StataShiny_Example_Site/)**] — a working example site built entirely with `statashiny` (+ `webdoc2`) and hosted free on GitHub Pages.
+> 🔗 **See it live:** [**ericabooth.github.io/StataShiny_Example_Site**](https://ericabooth.github.io/StataShiny_Example_Site/) — a working example site built entirely with `statashiny` (+ `webdoc2`) and hosted free on GitHub Pages.
 
 ---
 
@@ -22,7 +22,7 @@ A static regression table shows one number. A `statashiny` dashboard lets your a
 - **Interactions** — "How does origin change the weight–price relationship?"
 - **Uncertainty** — watch confidence bands widen as simulated N shrinks.
 
-And because the output is plain HTML with CDN-loaded libraries, **there's nothing to install for the viewer** — it opens in any browser, offline or online.
+And because the output is plain HTML with CDN-loaded libraries, **there's nothing to install for the viewer** — it opens in any browser. The libraries load from public CDNs when the page opens, so viewing needs an internet connection.
 
 ---
 
@@ -60,7 +60,7 @@ statashiny, build export("dashboard.html") open
 
 `open` pops it straight into your browser. That's the whole workflow:
 
-1. `statashiny, title(...) replace` — start a new dashboard
+1. `statashiny, title(...) replace` — start a new dashboard (`replace` clears the previous dashboard's components; `build` always overwrites the export file)
 2. add inputs / outputs (`output(table)`, `output(val)`, `input(num)`, `input(check)`, …)
 3. `statashiny, build export("file.html") open` — write the HTML and open it
 
@@ -132,18 +132,18 @@ Run it and you get `mwe_statashiny.html` (open this), plus `shiny_table.html` an
 | `statashiny ID, output(table) vars(...) toggles` | …plus auto checkboxes to show/hide each column |
 | `statashiny ID, output(val) label(...) [prefix() suffix()]` | A value "card" that JavaScript fills in |
 | `statashiny ID, output(raw) label("<...html...>")` | Drop in arbitrary HTML (e.g. a chart container) |
-| `statashiny ID, input(num) val() min() max() step()` | A numeric input the user can change |
+| `statashiny ID, input(num) val() min() max() step()` | A numeric input the user can change (no limits unless `min()`/`max()` are given) |
 | `statashiny ID, input(check) [checked]` | A checkbox |
-| `statashiny, calc("...JS...")` | Add JavaScript to the live `updateDashboard()` function |
+| `statashiny, calc("...JS...")` | Add JavaScript to the live `updateDashboard()` function (use compound quotes, ``calc(`"...JS with "quotes"..."')``, when the code holds a double quote) |
 | `statashiny, build export("file.html") [open]` | Write the HTML (and optionally open it) |
 
-Full reference with five worked examples (CI explorer, policy simulator, histogram, difference-in-differences): `help statashiny`.
+Full reference with six worked examples (searchable table, CI explorer, policy simulator, histogram, difference-in-differences, dynamic UI): `help statashiny`.
 
 ---
 
 ## Publishing to GitHub Pages (like the demo site)
 
-The demo at[ [ericabooth.github.io/statashiny_Example_Site]([https://ericabooth.github.io/statashiny_Example_Site/](https://ericabooth.github.io/StataShiny_Example_Site/)) ](https://ericabooth.github.io/StataShiny_Example_Site/) is just `statashiny` output committed to a repo with Pages turned on:
+The demo at [ericabooth.github.io/StataShiny_Example_Site](https://ericabooth.github.io/StataShiny_Example_Site/) is just `statashiny` output committed to a repo with Pages turned on:
 
 1. Put your built `.html` files (report + widgets, all in one folder) in a GitHub repo.
 2. Repo **Settings → Pages → Source: Deploy from a branch**, pick `main` and `/ (root)`.
@@ -154,6 +154,8 @@ Because Pages serves over `https://`, the `file://` iframe restriction disappear
 ---
 
 ## Changes
+
+- 1.5.4 (9 Nov 2026): the abbreviations `c()`, `o(raw)` and `l()` work; they were accepted and silently dropped. `calc()` code wrapped in compound quotes reaches the page without the delimiters (they were a JavaScript syntax error that disabled the whole dashboard). Double quotes in `title()`, `label()`, `prefix()` and `suffix()` no longer stop the command. `min()` and `max()` are written only when given; they used to default to -1000 and 1000, which capped larger values. An unknown `input()` or `output()` type is an error. `export()` expands a leading `~` and accepts backslash and UNC paths.
 
 - 1.5.3 (9 Nov 2026): string values, variable labels and value labels that contain a line break or `</script>` no longer break the page. Before, one such value made every table on the page render empty while `build` still reported success.
 
